@@ -1,0 +1,22 @@
+// This is a test file for the JLox scanner
+// Testing single line comments first.
+
+var a = 10;
+
+for (;;) {
+  var b = 20;
+
+  a += b;
+ /*
+  * Testing multi-line, C-style comments
+  * ensuring we skip them in the scanner
+  */
+
+  /*
+   *  /* This is an embedded c-ctyle comment */
+   */
+
+  if (a > 5000) {
+    break;
+  }
+}
