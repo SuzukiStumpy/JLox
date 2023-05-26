@@ -13,6 +13,8 @@ abstract class Expr
         R visitLiteralExpr(Literal expr);
 
         R visitUnaryExpr(Unary expr);
+
+        R visitTernaryExpr(Ternary expr);
     }
 
     static class Binary extends Expr
@@ -82,6 +84,26 @@ abstract class Expr
         <R> R accept(Visitor<R> visitor)
         {
             return visitor.visitUnaryExpr(this);
+        }
+    }
+
+    static class Ternary extends Expr
+    {
+        final Expr test;
+        final Expr trueBranch;
+        final Expr falseBranch;
+
+        Ternary(Expr test, Expr trueBranch, Expr falseBranch)
+        {
+            this.test = test;
+            this.trueBranch = trueBranch;
+            this.falseBranch = falseBranch;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor)
+        {
+            return visitor.visitTernaryExpr(this);
         }
     }
 

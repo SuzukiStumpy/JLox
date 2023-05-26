@@ -48,7 +48,9 @@ public class Parser
      * The next sequence of methods implements the following grammar:
      * <br>
      * <pre>
-     *   expression -> equality;
+     *   expression -> comma ;
+     *   comma      -> ternary ( "," expression )* ;
+     *   ternary    -> equality ( "?" expression ":" expression )* ;
      *   equality   -> comparison ( ("!=" | "==") comparison )* ;
      *   comparison -> term ( (">" | ">=" | "<" | "<=") term )* ;
      *   term       -> factor ( ("-" | "+") factor )* ;
@@ -61,7 +63,39 @@ public class Parser
      */
     private Expr expression()
     {
-        return equality();
+        return comma();
+    }
+
+    /**
+     * @see #expression()
+     */
+    private Expr comma()
+    {
+        // TODO: Factor in changes when parsing function arguments (at a
+        //  later juncture)
+        Expr expr = ternary();
+        while (match(COMMA)) {
+            Token operator = previous();
+            Expr right = expression();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+        return expr;
+    }
+
+    /**
+     * @see #expression()
+     */
+    private Expr ternary()
+    {
+        Expr expr = equality();
+
+        if (match(QUERY)) {
+            Expr branch1 = expression();
+            consume(COLON, "Expect ':' after first branch of ternary operator");
+            Expr branch2 = expression();
+            expr = new Expr.Ternary(expr, branch1, branch2);
+        }
+        return expr;
     }
 
     /**

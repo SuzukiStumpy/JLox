@@ -2,6 +2,7 @@ package com.craftinginterpreters.tools;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,8 @@ public class GenerateAst
             "Binary   : Expr left, Token operator, Expr right",
             "Grouping : Expr expression",
             "Literal  : Object value",
-            "Unary    : Token operator, Expr right"
+            "Unary    : Token operator, Expr right",
+            "Ternary  : Expr test, Expr trueBranch, Expr falseBranch"
         ));
     }
 
@@ -42,7 +44,7 @@ public class GenerateAst
         throws IOException
     {
         String path = outputDir +"/"+ baseName +".java";
-        PrintWriter writer = new PrintWriter(path, "UTF-8");
+        PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);
 
         writer.println("package com.craftinginterpreters.lox;");
         writer.println();
