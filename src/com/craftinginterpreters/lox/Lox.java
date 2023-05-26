@@ -1,2 +1,109 @@
-package PACKAGE_NAME;public class Lox {
+package com.craftinginterpreters.lox;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+public class Lox {
+    static boolean hadError = false;
+
+    /**
+     * Main entry point for the Lox compiler/interpreter
+     *
+     * @param args Command-line argument (if any) passed in.  If passed, should
+     *             be the path/name of a Lox source file to execute.  If no
+     *             parameter passed, then code enters the REPL.  If more than
+     *             one parameter is passed, prints a usage message and exits.
+     * @throws IOException
+     */
+    public static void main(String[] args) throws IOException
+    {
+        if (args.length > 1) {
+            System.out.println("Usage: jlox [script]");
+            System.exit(64);
+        } else if (args.length == 1) {
+            runFile(args[0]);
+        } else {
+            runPrompt();
+        }
+    }
+
+    /**
+     * Load and run a Lox program from a file
+     *
+     * @param path The full path name to the program file to load.
+     * @throws IOException
+     */
+    private static void runFile(String path) throws IOException
+    {
+        byte[] bytes = Files.readAllBytes(Paths.get(path));
+        run(new String(bytes, Charset.defaultCharset()));
+
+        // Indicate an error in the return code
+        if (hadError) System.exit(65);
+    }
+
+    /**
+     * The REPL for lox.  Accepts commands for immediate execution.  Exits the
+     * REPL when a null input is detected (Ctrl-D)
+     *
+     * @throws IOException
+     */
+    private static void runPrompt() throws IOException
+    {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        for (;;) {
+            System.out.print("lox> ");
+            String line = reader.readLine();
+            if (line == null) break;
+            run(line);
+            hadError = false;  // Reset the error flag in REPL mode
+        }
+    }
+
+    /**
+     * The main Lox core.  Actually compiles and executes the passed in code
+     *
+     * @param source The code we want to execute.
+     */
+    private static void run(String source)
+    {
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        // For the time being, just print the tokens out to console.
+        for (Token token: tokens) {
+            System.out.println(token);
+        }
+    }
+
+    /**
+     * Emits an error message
+     *
+     * @param line The line number the error occurred at
+     * @param message The error message
+     */
+    static void error(int line, String message)
+    {
+        report(line, "", message);
+    }
+
+    /**
+     * Does the actual printing of the error message to the console
+     *
+     * @param line The line the error occurred at
+     * @param where Whereabouts in the code the error occurred
+     * @param message The actual error message
+     */
+    private static void report(int line, String where, String message)
+    {
+        System.err.println("[line "+ line +"] Error "+ where +": "+ message);
+        hadError = true;
+    }
 }
