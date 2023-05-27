@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+    private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     /**
      * Main entry point for the Lox compiler/interpreter
@@ -45,6 +47,7 @@ public class Lox {
 
         // Indicate an error in the return code
         if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70);
     }
 
     /**
@@ -64,6 +67,7 @@ public class Lox {
             if (line == null) break;
             run(line);
             hadError = false;  // Reset the error flag in REPL mode
+            hadRuntimeError = false;
         }
     }
 
@@ -82,7 +86,11 @@ public class Lox {
         // Stop if there was a syntax error
         if (hadError) return;
 
-        System.out.println(new AstPrinter().print(expression));
+        // Fire up the interpreter with the parsed syntax tree.
+        interpreter.interpret(expression);
+
+        // Old code for printing out the syntax tree in the parser.
+        //System.out.println(new AstPrinter().print(expression));
 
         /*  Old code (pre-parser)
         // For the time being, just print the tokens out to console
@@ -113,7 +121,7 @@ public class Lox {
      */
     private static void report(int line, String where, String message)
     {
-        System.err.println("[line "+ line +"] Error "+ where +": "+ message);
+        System.err.println("\n[line "+ line +"] Error "+ where +": "+ message);
         hadError = true;
     }
 
@@ -130,5 +138,17 @@ public class Lox {
         } else {
             report(token.line, " at '"+ token.lexeme +"'", message);
         }
+    }
+
+    /**
+     * Static function for reporting runtime errors when read through the
+     * interpreter.
+     * @param error the error object that was thrown.
+     */
+    static void runtimeError(RuntimeError error)
+    {
+        System.err.println("\n"+ error.getMessage() + "\n [Line "+
+            error.token.line + "]");
+        hadRuntimeError = true;
     }
 }
