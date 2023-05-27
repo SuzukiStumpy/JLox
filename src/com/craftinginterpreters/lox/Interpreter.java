@@ -1,5 +1,7 @@
 package com.craftinginterpreters.lox;
 
+import java.util.List;
+
 /**
  * Exception class.  Thrown within the interpreter when a runtime error is
  * detected.
@@ -19,23 +21,35 @@ class RuntimeError extends RuntimeException
  * Implementation of the Interpreter for executing the parsed syntax tree.
  * Contains methods for interpreting all the various syntax tree node types
  */
-class Interpreter implements Expr.Visitor<Object>
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
 {
     /**
-     * The public interface to the interpreter.  Ingests an expression object
-     * and passes it into the requisite handler method (or reports an error)
-     * @param expression The expression to interpret
+     * The public interface to the interpreter.  Ingests a list of statements
+     * and executes each in sequence.
+     * @param statements A list of statements to execute
      */
-    void interpret(Expr expression)
+    void interpret(List<Stmt> statements)
     {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements)
+            {
+                execute(statement);
+            }
         }
         catch (RuntimeError error)
         {
             Lox.runtimeError(error);
         }
+    }
+
+    /**
+     * Execute an individual statement by passing the interpreter to it's
+     * accept method.
+     * @param statement the statement to execute.
+     */
+    private void execute(Stmt statement)
+    {
+        statement.accept(this);
     }
 
     /**
@@ -270,5 +284,30 @@ class Interpreter implements Expr.Visitor<Object>
             return;
         }
         throw new RuntimeError(operator, "Operands must be numbers.");
+    }
+
+    //=============== Statement processors ======================
+
+    /**
+     * Interprets an expression statement.
+     * @param stmt the statement to interpret
+     */
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt)
+    {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    /**
+     * Interprets a print statement.
+     * @param stmt the print statement to interpret
+     */
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt)
+    {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 }

@@ -30,6 +30,11 @@ public class GenerateAst
             "Unary    : Token operator, Expr right",
             "Ternary  : Expr test, Expr trueBranch, Expr falseBranch"
         ));
+
+        defineAst(outputDir, "Stmt", Arrays.asList(
+            "Expression : Expr expression",
+            "Print      : Expr expression"
+        ));
     }
 
     /**

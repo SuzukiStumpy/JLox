@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 import static com.craftinginterpreters.lox.TokenType.*;
 
@@ -32,22 +33,43 @@ public class Parser
 
     /**
      * Main method to start the parser once it has been instantiated.
-     * @return The parsed syntax tree.
+     * Implements the 'program' rule from the Lox grammar.
+     * @return A lisst of parsed statements which can be passed to the
+     * interpreter
+     * @see #expression()
      */
-    Expr parse()
+    List<Stmt> parse()
     {
-        try {
-            return expression();
+        List<Stmt> statements = new ArrayList<>();
+
+        while(!isAtEnd()) {
+            statements.add(statement());
         }
-        catch (ParseError error) {
-            return null;
-        }
+        return statements;
     }
+
+    /**
+     * Implements the 'statement' rule from the Lox grammar, or passed
+     * through to the expressionStatement executor.
+     * @return The result of processing the statement.
+     * @see #expression()
+     */
+    private Stmt statement()
+    {
+        if (match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
 
     /**
      * The next sequence of methods implements the following grammar:
      * <br>
      * <pre>
+     *   program    -> statement* EOF ;
+     *   statement  -> exprStmt | printStmt ;
+     *   exprStmt   -> expression ";" ;
+     *   printStmt  -> "print" expression ;
      *   expression -> comma ;
      *   comma      -> ternary ( "," expression )* ;
      *   ternary    -> equality ( "?" expression ":" expression )* ;
@@ -57,7 +79,7 @@ public class Parser
      *   factor     -> unary ( ("/" | "*") unary )* ;
      *   unary      -> ("!" | "-") unary | primary ;
      *   primary    -> NUMBER | STRING | "true" | "false" | "nil"
-     *                 | "(" expression ")" ;
+     *                 | "(" expression ")"
      *              // ERROR PRODUCTIONS
      *                 | ("!=" | "==") equality
      *                 | (">" | ">=" | "<" | "<=") comparison
@@ -334,5 +356,30 @@ public class Parser
 
             advance();
         }
+    }
+
+    //=================== Statement processors =========================
+
+    /**
+     * Implementation of the PRINT statement
+     * @return The parsed print statement.
+     */
+    private Stmt printStatement()
+    {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    /**
+     * Fall through position for statement processing.  Evaluate the
+     * expression statement and return it up the chain...
+     * @return The parsed expression
+     */
+    private Stmt expressionStatement()
+    {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
     }
 }

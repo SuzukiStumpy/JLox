@@ -81,13 +81,13 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         // Stop if there was a syntax error
         if (hadError) return;
 
         // Fire up the interpreter with the parsed syntax tree.
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
 
         // Old code for printing out the syntax tree in the parser.
         //System.out.println(new AstPrinter().print(expression));
@@ -134,9 +134,9 @@ public class Lox {
     static void error(Token token, String message)
     {
         if (token.type == TokenType.EOF) {
-            report(token.line, " at end", message);
+            report(token.line, "at end", message);
         } else {
-            report(token.line, " at '"+ token.lexeme +"'", message);
+            report(token.line, "at '"+ token.lexeme +"'", message);
         }
     }
 
