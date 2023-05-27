@@ -76,6 +76,7 @@ public class Parser
     {
         if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
+        if (match(IF)) return ifStatement();
 
         return expressionStatement();
     }
@@ -88,8 +89,10 @@ public class Parser
      *   program     -> declaration* EOF ;
      *   declaration -> varDecl | statement ;
      *   varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
-     *   statement   -> exprStmt | printStmt | block ;
+     *   statement   -> exprStmt | ifStmt | printStmt | block ;
      *   exprStmt    -> expression ";" ;
+     *   ifStmt      -> "if" "(" expression ")" statement
+     *                  ( "else" statement )? ;
      *   printStmt   -> "print" expression ;
      *   block       -> "{" declaration "}" ;
      *   expression  -> comma ;
@@ -465,5 +468,25 @@ public class Parser
 
         consume(SEMICOLON, "Expect ';' after variable declaration.");
         return new Stmt.Var(name, initializer);
+    }
+
+    /**
+     * Parse out an if statement
+     * @return the parsed control statement
+     */
+    private Stmt ifStatement()
+    {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+
+        if (match(ELSE)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 }
