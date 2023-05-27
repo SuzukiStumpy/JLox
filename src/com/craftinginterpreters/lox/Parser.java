@@ -77,6 +77,7 @@ public class Parser
         if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
         if (match(IF)) return ifStatement();
+        if (match(WHILE)) return whileStatement();
 
         return expressionStatement();
     }
@@ -89,11 +90,12 @@ public class Parser
      *   program     -> declaration* EOF ;
      *   declaration -> varDecl | statement ;
      *   varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
-     *   statement   -> exprStmt | ifStmt | printStmt | block ;
+     *   statement   -> exprStmt | ifStmt | printStmt | whileStmt | block ;
      *   exprStmt    -> expression ";" ;
      *   ifStmt      -> "if" "(" expression ")" statement
      *                  ( "else" statement )? ;
      *   printStmt   -> "print" expression ;
+     *   whileStmt   -> "while" "(" expression ")" statement ;
      *   block       -> "{" declaration "}" ;
      *   expression  -> comma ;
      *   comma       -> assignment ( "," expression )* ;
@@ -520,5 +522,19 @@ public class Parser
         }
 
         return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    /**
+     * Parse out a while loop
+     * @return the parsed while statement
+     */
+    private Stmt whileStatement()
+    {
+        consume(LEFT_PAREN, "Expect '(' after 'while'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after while condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
     }
 }
