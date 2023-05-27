@@ -24,15 +24,18 @@ public class GenerateAst
         String outputDir = args[0];
 
         defineAst(outputDir, "Expr", Arrays.asList(
+            "Assign   : Token name, Expr value",
             "Binary   : Expr left, Token operator, Expr right",
             "Grouping : Expr expression",
             "Literal  : Object value",
             "Unary    : Token operator, Expr right",
-            "Ternary  : Expr test, Expr trueBranch, Expr falseBranch"
+            "Ternary  : Expr test, Expr trueBranch, Expr falseBranch",
+            "Variable : Token name"
         ));
 
         defineAst(outputDir, "Stmt", Arrays.asList(
             "Expression : Expr expression",
+            "Var        : Token name, Expr initializer",
             "Print      : Expr expression"
         ));
     }

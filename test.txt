@@ -1,3 +1,6 @@
+/* Now the interpreter is in place, we can ignore the majority of this until
+   the entire language has been implemented.
+
 // This is a test file for the JLox scanner
 // Testing single line comments first.
 
@@ -20,3 +23,11 @@ for (;;) {
     break;
   }
 }
+*/
+
+// Simple statement tests...
+print "one";
+print "two";
+print true;
+print !true;
+print "2 + 3 = " + (2+3);

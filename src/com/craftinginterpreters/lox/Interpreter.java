@@ -23,6 +23,8 @@ class RuntimeError extends RuntimeException
  */
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
 {
+    // Storage for program symbol tables/variables
+    private final Environment environment = new Environment();
     /**
      * The public interface to the interpreter.  Ingests a list of statements
      * and executes each in sequence.
@@ -118,6 +120,31 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
 
         // Unreachable
         return null;
+    }
+
+    /**
+     * Process a variable expression.  Look up the value from the symbol table
+     * and parse it.
+     * @param expr The expression to interpret
+     * @return The value of the processed expression
+     */
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr)
+    {
+        return environment.get(expr.name);
+    }
+
+    /**
+     * Processes variable (re)assignment expressions/statements.
+     * @param expr The assignment expression t
+     * @return the value assigned.
+     */
+    @Override
+    public Object visitAssignExpr(Expr.Assign expr)
+    {
+        Object value = evaluate(expr.value);
+        environment.assign(expr.name, value);
+        return value;
     }
 
     /**
@@ -310,4 +337,20 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
         System.out.println(stringify(value));
         return null;
     }
+
+    /**
+     * Interpret variable declarations
+     * @param stmt the statement to interpret
+     */
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt)
+    {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
 }
