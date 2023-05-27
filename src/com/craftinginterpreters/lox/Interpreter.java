@@ -24,7 +24,7 @@ class RuntimeError extends RuntimeException
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
 {
     // Storage for program symbol tables/variables
-    private final Environment environment = new Environment();
+    private Environment environment = new Environment();
     /**
      * The public interface to the interpreter.  Ingests a list of statements
      * and executes each in sequence.
@@ -353,4 +353,35 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
         return null;
     }
 
+    /**
+     * Interpret statement blocks.
+     * @param stmt the block that we wish to execute
+     */
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt)
+    {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    /**
+     * Workhorse to actually execute the statements within a nested code block
+     * @param statements The list of statements to execute in the block
+     * @param environment The local scope environment
+     */
+    void executeBlock(List<Stmt> statements, Environment environment)
+    {
+        Environment previous = this.environment;
+
+        try {
+            this.environment = environment;
+
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        }
+        finally {
+            this.environment = previous;
+        }
+    }
 }

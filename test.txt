@@ -25,9 +25,31 @@ for (;;) {
 }
 */
 
-// Simple statement tests...
+/* // Simple statement tests...
 print "one";
 print "two";
 print true;
 print !true;
 print "2 + 3 = " + (2+3);
+*/
+
+// Variable scope and code block testing
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;

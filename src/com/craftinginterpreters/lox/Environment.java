@@ -9,8 +9,27 @@ import java.util.Map;
  */
 class Environment
 {
+    // The parent environment for this scope (if any)
+    final Environment enclosing;
+
     // Storage for the variable symbol table.
     private final Map<String, Object> values = new HashMap<>();
+
+    /**
+     * Base constructor.  Used when instantiating the global environment
+     */
+    Environment() {
+        enclosing = null;
+    }
+
+    /**
+     * When generating new scopes, pass in a reference to the enclosing scope
+     * @param enclosing The parent/enclosing scope
+     */
+    Environment(Environment enclosing)
+    {
+        this.enclosing = enclosing;
+    }
 
     /**
      * Create and store a variable into the table (either new or a redefinition)
@@ -33,6 +52,8 @@ class Environment
             return values.get(name.lexeme);
         }
 
+        if (enclosing != null) return enclosing.get(name);
+
         throw new RuntimeError(name, "Undefined variable '"+ name.lexeme +"'.");
     }
 
@@ -45,6 +66,11 @@ class Environment
     {
         if (values.containsKey(name.lexeme)) {
             values.put(name.lexeme, value);
+            return;
+        }
+
+        if (enclosing != null) {
+            enclosing.assign(name, value);
             return;
         }
 

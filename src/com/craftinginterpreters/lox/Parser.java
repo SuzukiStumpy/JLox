@@ -75,6 +75,7 @@ public class Parser
     private Stmt statement()
     {
         if (match(PRINT)) return printStatement();
+        if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
     }
@@ -87,9 +88,10 @@ public class Parser
      *   program     -> declaration* EOF ;
      *   declaration -> varDecl | statement ;
      *   varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
-     *   statement   -> exprStmt | printStmt ;
+     *   statement   -> exprStmt | printStmt | block ;
      *   exprStmt    -> expression ";" ;
      *   printStmt   -> "print" expression ;
+     *   block       -> "{" declaration "}" ;
      *   expression  -> comma ;
      *   comma       -> assignment ( "," expression )* ;
      *   assignment  -> IDENTIFIER "=" assignment | ternary ;
@@ -432,6 +434,26 @@ public class Parser
         return new Stmt.Expression(expr);
     }
 
+    /**
+     * Define a new statement block/scope and return the enclosed statements
+     * @return the list of statements parsed within the block
+     */
+    private List<Stmt> block()
+    {
+        List<Stmt> statements = new ArrayList<>();
+
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
+
+    /**
+     * Parse the declaration (and possible initialisation) of a new variable
+     * @return The parsed statement
+     */
     private Stmt varDeclaration()
     {
         Token name = consume(IDENTIFIER, "Expect variable name.");
