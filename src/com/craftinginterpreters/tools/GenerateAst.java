@@ -29,6 +29,7 @@ public class GenerateAst
             "Grouping : Expr expression",
             "Literal  : Object value",
             "Unary    : Token operator, Expr right",
+            "Logical  : Expr left, Token operator, Expr right",
             "Ternary  : Expr test, Expr trueBranch, Expr falseBranch",
             "Variable : Token name"
         ));

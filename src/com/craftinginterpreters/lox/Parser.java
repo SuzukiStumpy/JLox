@@ -98,7 +98,9 @@ public class Parser
      *   expression  -> comma ;
      *   comma       -> assignment ( "," expression )* ;
      *   assignment  -> IDENTIFIER "=" assignment | ternary ;
-     *   ternary     -> equality ( "?" expression ":" expression )* ;
+     *   ternary     -> logic_or ( "?" expression ":" expression )* ;
+     *   logic_or    -> logic_and ( "or" logic_and )* ;
+     *   logic_and   -> equality ( "and" equality )* ;
      *   equality    -> comparison ( ("!=" | "==") comparison )* ;
      *   comparison  -> term ( (">" | ">=" | "<" | "<=") term )* ;
      *   term        -> factor ( ("-" | "+") factor )* ;
@@ -164,13 +166,43 @@ public class Parser
      */
     private Expr ternary()
     {
-        Expr expr = equality();
+        Expr expr = or();
 
         if (match(QUERY)) {
             Expr branch1 = expression();
             consume(COLON, "Expect ':' after first branch of ternary operator");
             Expr branch2 = expression();
             expr = new Expr.Ternary(expr, branch1, branch2);
+        }
+        return expr;
+    }
+
+    /**
+     * @see #expression()
+     */
+    private Expr or()
+    {
+        Expr expr = and();
+
+        while (match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+        return expr;
+    }
+
+    /**
+     * @see #expression()
+     */
+    private Expr and()
+    {
+        Expr expr = equality();
+
+        while (match(AND)) {
+            Token operator = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
         return expr;
     }
