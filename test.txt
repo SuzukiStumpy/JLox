@@ -33,7 +33,7 @@ print !true;
 print "2 + 3 = " + (2+3);
 */
 
-// Variable scope and code block testing
+/* // Variable scope and code block testing
 var a = "global a";
 var b = "global b";
 var c = "global c";
@@ -53,3 +53,14 @@ var c = "global c";
 print a;
 print b;
 print c;
+*/
+
+// For loop testing...
+var a = 0;
+var tmp;
+
+for (var b = 1; a < 10000; b = tmp + b) {
+  print a;
+  tmp = a;
+  a = b;
+}
