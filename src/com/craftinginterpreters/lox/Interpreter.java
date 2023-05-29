@@ -23,6 +23,11 @@ class RuntimeError extends RuntimeException
  */
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
 {
+    // Error classes for handling break/continue functionality...
+    private static class BreakException extends RuntimeException {}
+    private static class ContinueException extends RuntimeException {}
+
+
     // Storage for program symbol tables/variables
     private Environment environment = new Environment();
     /**
@@ -421,9 +426,44 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     @Override
     public Void visitWhileStmt(Stmt.While stmt)
     {
-        while (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.body);
+        // This outer try/catch handles processing of the break statement
+        try {
+            while (isTruthy(evaluate(stmt.condition))) {
+                // Inner catch handles the continue statement
+                try {
+                    execute(stmt.body);
+                }
+                catch (ContinueException e) {
+                    // Do nothing
+                }
+            }
+        }
+        catch (BreakException e) {
+            // Do nothing
         }
         return null;
     }
+
+    /**
+     * Implementation of the break statement.  Just throws an exception which
+     * will be handled in the while loop processor
+     * @param stmt The break statement to execute
+     */
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt)
+    {
+        throw new BreakException();
+    }
+
+    /**
+     * Implementation of the continue statement.  Just throws an exception which
+     * will be handled in the while loop processor
+     * @param stmt The continue statement to execute
+     */
+    @Override
+    public Void visitContinueStmt(Stmt.Continue stmt)
+    {
+        throw new ContinueException();
+    }
+
 }
