@@ -148,8 +148,6 @@ public class Parser
      */
     private Expr comma()
     {
-        // TODO: Factor in changes when parsing function arguments (at a
-        //  later juncture)
         Expr expr = assignment();
         while (match(COMMA)) {
             Token operator = previous();
