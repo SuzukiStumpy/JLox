@@ -1,69 +1,15 @@
-/* Now the interpreter is in place, we can ignore the majority of this until
-   the entire language has been implemented.
+// Test functions ... calculate the first 20 Fibonacci numbers
 
-// This is a test file for the JLox scanner
-// Testing single line comments first.
+var start = clock();
 
-var a = 10;
-
-for (;;) {
-  var b = 20;
-
-  a += b;
- /*
-  * Testing multi-line, C-style comments
-  * ensuring we skip them in the scanner
-  */
-
-  /*
-   *  /* This is an embedded c-ctyle comment */
-   */
-
-  if (a > 5000) {
-    break;
-  }
+fun fib(n) {
+  if (n <= 1) return n;
+  return fib(n - 2) + fib(n - 1);
 }
-*/
 
-/* // Simple statement tests...
-print "one";
-print "two";
-print true;
-print !true;
-print "2 + 3 = " + (2+3);
-*/
-
-/* // Variable scope and code block testing
-var a = "global a";
-var b = "global b";
-var c = "global c";
-{
-  var a = "outer a";
-  var b = "outer b";
-  {
-    var a = "inner a";
-    print a;
-    print b;
-    print c;
-  }
-  print a;
-  print b;
-  print c;
+for (var i = 0; i < 20; i = i + 1) {
+  print fib(i);
 }
-print a;
-print b;
-print c;
-*/
 
-// For loop testing...
-var a = 0;
-var tmp;
-
-for (var b = 1; a < 10000; b = tmp + b) {
-  if ( a > 500) { print "breaking out, a is " + a;  break; }
-  print a;
-  tmp = a;
-  if ( a < 20 ) { print "continuing with small a increment"; a = a + 1;
-  continue; }
-  a = b;
-}
+print "";
+print "Done. Elapsed time: "+ (clock() - start);

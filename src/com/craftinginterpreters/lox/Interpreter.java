@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +30,32 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
 
 
     // Storage for program symbol tables/variables
-    private Environment environment = new Environment();
+    //private Environment environment = new Environment();
+
+    // Define the global scope for the interpreter and initialise the current
+    // scope to global.
+    final Environment globals = new Environment();
+    private Environment environment = globals;
+
+    /**
+     * Constructor for the interpreter ... defines built-in callable functions
+     */
+    Interpreter() {
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public int arity() { return 0; }
+
+            @Override
+            public Object call(Interpreter interpreter,
+                               List<Object> arguments) {
+                return (double)System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+        });
+    }
+
     /**
      * The public interface to the interpreter.  Ingests a list of statements
      * and executes each in sequence.
@@ -263,6 +289,37 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     }
 
     /**
+     * Interpreter for function calls
+     * @param expr The function call to process
+     * @return The result of executing the function.
+     */
+    @Override
+    public Object visitCallExpr(Expr.Call expr)
+    {
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expr argument : expr.arguments) {
+            arguments.add(evaluate(argument));
+        }
+
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expr.paren,
+                "Can only call functions and classes.");
+        }
+
+        LoxCallable function = (LoxCallable)callee;
+
+        if (arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren,
+                "Expected "+ function.arity() +" arguments, but got "
+                    + arguments.size() +".");
+        }
+
+        return function.call(this, arguments);
+    }
+
+    /**
      * Helper for evaluation of a passed in expression.  Simply passes the
      * expression back into the interpreter.
      * @param expr The expression to evaluate
@@ -466,4 +523,25 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
         throw new ContinueException();
     }
 
+    /**
+     * Implementation of user defined functions.  Creates the function object
+     * and adds it to the environment
+     * @param stmt The function definition to process
+     */
+    @Override
+    public Void visitFunctionStmt(Stmt.Function stmt)
+    {
+        LoxFunction function = new LoxFunction(stmt);
+        environment.define(stmt.name.lexeme, function);
+        return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(Stmt.Return stmt)
+    {
+        Object value = null;
+        if (stmt.value != null) value = evaluate(stmt.value);
+
+        throw new Return(value);
+    }
 }
