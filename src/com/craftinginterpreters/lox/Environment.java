@@ -76,4 +76,44 @@ class Environment
 
         throw new RuntimeError(name, "Undefined variable '"+ name.lexeme +"'.");
     }
+
+    /**
+     * Resolve the value of a local variable from the correct scope
+     * @param distance The distannce of the scope to look in
+     * @param name The variable to resolve
+     * @return the variables correct value
+     */
+    Object getAt(int distance, String name)
+    {
+        return ancestor(distance).values.get(name);
+    }
+
+    /**
+     * Directly resolve a local variable from the correct environment
+     * @param distance The distance to the environment record to return
+     * @return The correct environment.
+     */
+    Environment ancestor(int distance)
+    {
+        Environment environment = this;
+
+        for (int i = 0; i < distance; i++) {
+            environment = environment.enclosing;
+        }
+
+        return environment;
+    }
+
+    /**
+     * Assign a value to a local variable in the correct environment scope
+     * (called from Interpreter)
+     * @param distance The distance to the correct scope
+     * @param name Variable name
+     * @param value Variable value
+     */
+    void assignAt(int distance, Token name, Object value)
+    {
+        ancestor(distance).values.put(name.lexeme, value);
+    }
+
 }

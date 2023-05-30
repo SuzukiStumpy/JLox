@@ -86,6 +86,13 @@ public class Lox {
         // Stop if there was a syntax error
         if (hadError) return;
 
+        // Perform static bindings for local variables
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        // Stop if there was a resolution error
+        if (hadError) return;
+
         // Fire up the interpreter with the parsed syntax tree.
         interpreter.interpret(statements);
 

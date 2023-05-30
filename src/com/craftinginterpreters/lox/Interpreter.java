@@ -1,7 +1,9 @@
 package com.craftinginterpreters.lox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Exception class.  Thrown within the interpreter when a runtime error is
@@ -36,6 +38,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     // scope to global.
     final Environment globals = new Environment();
     private Environment environment = globals;
+    private final Map<Expr, Integer> locals = new HashMap<>();
 
     /**
      * Constructor for the interpreter ... defines built-in callable functions
@@ -162,7 +165,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     @Override
     public Object visitVariableExpr(Expr.Variable expr)
     {
-        return environment.get(expr.name);
+        //return environment.get(expr.name);
+        return lookupVariable(expr.name, expr);
+    }
+
+    /**
+     * Look up the correctly resolved variable values from the scope stack
+     * @param name The variable to resolve
+     * @param expr the expression we are processing.
+     * @return the value of the resolved variable
+     */
+    private Object lookupVariable(Token name, Expr expr)
+    {
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            return environment.getAt(distance, name.lexeme);
+        } else {
+            return globals.get(name);
+        }
     }
 
     /**
@@ -174,7 +194,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     public Object visitAssignExpr(Expr.Assign expr)
     {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            globals.assign(expr.name, value);
+        }
+
+        //environment.assign(expr.name, value);
         return value;
     }
 
@@ -543,5 +571,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
         if (stmt.value != null) value = evaluate(stmt.value);
 
         throw new Return(value);
+    }
+
+    /**
+     * Resolve variables for a given expression (called from the resolver)
+     * @param expr the expression to resolve
+     * @param depth the current scope depth
+     */
+    void resolve(Expr expr, int depth)
+    {
+        locals.put(expr, depth);
     }
 }
