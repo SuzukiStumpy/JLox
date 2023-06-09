@@ -10,8 +10,29 @@ import java.util.Stack;
  */
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
 {
+    /**
+     * Enables us to track (and report) errors if a local variable is declared
+     * but never read within a function call
+     */
+    private static class Variable
+    {
+        final Token name;
+        VariableState state;
+
+        private Variable(Token name, VariableState state)
+        {
+            this.name = name;
+            this.state = state;
+        }
+    }
+
+    private enum VariableState
+    {
+        DECLARED, DEFINED, READ
+    }
+
     private final Interpreter interpreter;
-    private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+    private final Stack<Map<String, Variable>> scopes = new Stack<>();
     private FunctionType currentFunction = FunctionType.NONE;
 
     Resolver(Interpreter interpreter)
@@ -53,12 +74,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
     public Void visitVariableExpr(Expr.Variable expr)
     {
         if (!scopes.isEmpty() &&
-                scopes.peek().get(expr.name.lexeme) == Boolean.FALSE) {
+            scopes.peek().containsKey(expr.name.lexeme) &&
+                scopes.peek().get(expr.name.lexeme).state == VariableState.DECLARED) {
             Lox.error(expr.name, "Can't read local variable in its own " +
                 "initializer.");
         }
 
-        resolveLocal(expr, expr.name);
+        resolveLocal(expr, expr.name, true);
         return null;
     }
 
@@ -66,7 +88,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
     public Void visitAssignExpr(Expr.Assign expr)
     {
         resolve(expr.value);
-        resolveLocal(expr, expr.name);
+        resolveLocal(expr, expr.name,false);
         return null;
     }
 
@@ -229,7 +251,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
      */
     private void beginScope()
     {
-        scopes.push(new HashMap<String, Boolean>());
+        scopes.push(new HashMap<String, Variable>());
     }
 
     /**
@@ -237,7 +259,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
      */
     private void endScope()
     {
-        scopes.pop();
+        Map<String, Variable> scope = scopes.pop();
+
+        for (Map.Entry<String, Variable> entry : scope.entrySet()) {
+            if (entry.getValue().state == VariableState.DEFINED) {
+                Lox.error(entry.getValue().name, "Local variable is not used.");
+            }
+        }
     }
 
     /**
@@ -248,13 +276,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
     {
         if (scopes.isEmpty()) return;
 
-        Map<String, Boolean> scope = scopes.peek();
+        Map<String, Variable> scope = scopes.peek();
 
         if (scope.containsKey(name.lexeme)) {
             Lox.error(name, "Already a variable with this name in this scope.");
         }
 
-        scope.put(name.lexeme, false);
+        scope.put(name.lexeme, new Variable(name, VariableState.DECLARED));
     }
 
     /**
@@ -265,7 +293,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
     private void define(Token name)
     {
         if (scopes.isEmpty()) return;
-        scopes.peek().put(name.lexeme, true);
+        scopes.peek().get(name.lexeme).state = VariableState.DEFINED;
     }
 
     /**
@@ -273,14 +301,21 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
      * @param expr the expression to process
      * @param name the variable to resolve
      */
-    private void resolveLocal(Expr expr, Token name)
+    private void resolveLocal(Expr expr, Token name, boolean isRead)
     {
         for (int i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name.lexeme)) {
                 interpreter.resolve(expr, scopes.size() - 1 - i);
+
+                // Mark variable as used
+                if (isRead) {
+                    scopes.get(i).get(name.lexeme).state = VariableState.READ;
+                }
                 return;
             }
         }
+
+        // Not found, so assume variable is global
     }
 
     /**
