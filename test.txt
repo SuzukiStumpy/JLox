@@ -1,18 +1,11 @@
-class Cake {
-    init(flavour) {
-        this.flavour = flavour;
-    }
-
-    taste() {
-        var adjective = "delicious";
-        print "The " + this.flavour + " cake is " + adjective + "!";
-    }
+class Math {
+  class square(n) {
+    return n * n;
+  }
 }
 
+print Math.square(3);
 
-var cake = Cake("carrot");
-cake.taste();
+Math.PI = 3.14159265358979;
 
-print cake.flavour;
-cake.flavour = "almond";
-cake.taste();
+print Math.PI;

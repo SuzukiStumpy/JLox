@@ -277,6 +277,10 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
         Map<String, Variable> scope = scopes.pop();
 
         for (Map.Entry<String, Variable> entry : scope.entrySet()) {
+            // Ignore non-usage of 'this' when exiting a class scope.
+            if (currentClass == ClassType.CLASS && entry.getValue().name.lexeme.equals("this")) {
+                continue;
+            }
             if (entry.getValue().state == VariableState.DEFINED) {
                 Lox.error(entry.getValue().name, "Local variable is not used.");
             }
@@ -379,6 +383,14 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
                 declaration = FunctionType.INITIALIZER;
             }
             resolveFunction(method, declaration);
+        }
+
+        for (Stmt.Function method : stmt.classMethods) {
+            beginScope();
+            declare(_this);
+            define(_this);
+            resolveFunction(method, FunctionType.METHOD);
+            endScope();
         }
 
         endScope();
