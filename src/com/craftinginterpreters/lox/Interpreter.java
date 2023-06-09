@@ -640,4 +640,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
         ((LoxInstance)object).set(expr.name, value);
         return value;
     }
+
+    /**
+     * Interpret instances of 'this' inside object methods
+     * @param expr The expression to interpret
+     * @return The object that 'this' is bound to in context
+     */
+    @Override
+    public Object visitThisExpr(Expr.This expr)
+    {
+        return lookupVariable(expr.keyword, expr);
+    }
 }

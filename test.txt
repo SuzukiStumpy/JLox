@@ -1,15 +1,19 @@
-class DevonshireCream {
-    serveOn() {
-        return "Scones";
+class Cake {
+    taste() {
+        var adjective = "delicious";
+        print "The " + this.flavour + " cake is " + adjective + "!";
     }
 }
 
-print DevonshireCream;
-var dc = DevonshireCream();
-print dc;
-dc.clotted = "of course!";
-print dc.clotted;
-print dc.serveOn();
 
+var cake = Cake();
+cake.flavour = "Chocolate";
+cake.taste();
 
-print DevonshireCream().serveOn();
+print this;  // Invalid - causes runtime error
+
+fun notAMethod() {
+  print this;
+}
+
+print notAMethod();
