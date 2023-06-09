@@ -23,9 +23,10 @@ public class LoxFunction implements LoxCallable
     {
         Environment environment = new Environment(closure);
 
-        for (int i = 0; i < declaration.params.size(); i++) {
-            environment.define(declaration.params.get(i).lexeme,
-                arguments.get(i));
+        if (declaration.params != null) {
+            for (int i = 0; i < declaration.params.size(); i++) {
+                environment.define(declaration.params.get(i).lexeme, arguments.get(i));
+            }
         }
 
         try {
@@ -62,5 +63,13 @@ public class LoxFunction implements LoxCallable
         Environment environment = new Environment(closure);
         environment.define("this", instance);
         return new LoxFunction(declaration, environment, isInitializer);
+    }
+
+    /**
+     * @return true if the method is a getter within a class, false otherwise
+     */
+    public boolean isGetter()
+    {
+        return declaration.params == null;
     }
 }
