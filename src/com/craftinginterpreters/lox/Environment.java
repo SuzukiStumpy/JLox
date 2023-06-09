@@ -79,7 +79,7 @@ class Environment
 
     /**
      * Resolve the value of a local variable from the correct scope
-     * @param distance The distannce of the scope to look in
+     * @param distance The distance of the scope to look in
      * @param name The variable to resolve
      * @return the variables correct value
      */

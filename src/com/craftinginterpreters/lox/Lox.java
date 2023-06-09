@@ -22,6 +22,7 @@ public class Lox {
      *             one parameter is passed, prints a usage message and exits.
      * @throws IOException
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public static void main(String[] args) throws IOException
     {
         if (args.length > 1) {

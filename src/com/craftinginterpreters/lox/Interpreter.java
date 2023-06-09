@@ -89,7 +89,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     }
 
     /**
-     * Helper method.  Takes the result of interpreting an expresion and
+     * Helper method.  Takes the result of interpreting an expression and
      * converts it to a printable string for output.
      * @param object the result to parse
      * @return a string representation of the passed object
@@ -365,6 +365,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
      * @param object The expression to evaluate
      * @return boolean true if expression is truthy, false otherwise.
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private boolean isTruthy(Object object)
     {
         if (object == null) return false;
@@ -505,7 +506,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     }
 
     /**
-     * Implentation of the while loop block
+     * Implementation of the while loop block
      * @param stmt The statement to execute
      */
     @Override

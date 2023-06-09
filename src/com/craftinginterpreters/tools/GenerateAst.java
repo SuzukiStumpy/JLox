@@ -9,10 +9,10 @@ import java.util.List;
 public class GenerateAst
 {
     /**
-     * Maint entrypoint for the AST Generator.
+     * Main entrypoint for the AST Generator.
      * @param args Expects a single parameter: The path for the output
      *             class to be saved in.  (Note filename is automatically
-     *             set.
+     *             set).
      * @throws IOException
      */
     public static void main(String[] args) throws IOException
@@ -60,6 +60,7 @@ public class GenerateAst
      * @param types List of the subclass definitions to add to the file
      * @throws IOException
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static void defineAst(
         String outputDir, String baseName, List<String> types)
         throws IOException

@@ -24,7 +24,7 @@ class Token
     }
 
     /**
-     * Override of the toString() method so we can print tokens to the console
+     * Override of the toString() method, so we can print tokens to the console
      * @return String representation of the Token
      */
     public String toString()
