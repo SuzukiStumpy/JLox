@@ -1,15 +1,15 @@
-// Test functions ... calculate the first 20 Fibonacci numbers
-
-var start = clock();
-
-fun fib(n) {
-  if (n <= 1) return n;
-  return fib(n - 2) + fib(n - 1);
+class DevonshireCream {
+    serveOn() {
+        return "Scones";
+    }
 }
 
-for (var i = 0; i < 20; i = i + 1) {
-  print fib(i);
-}
+print DevonshireCream;
+var dc = DevonshireCream();
+print dc;
+dc.clotted = "of course!";
+print dc.clotted;
+print dc.serveOn();
 
-print "";
-print "Done. Elapsed time: "+ (clock() - start);
+
+print DevonshireCream().serveOn();

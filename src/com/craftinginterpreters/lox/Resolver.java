@@ -43,7 +43,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
     private enum FunctionType
     {
         NONE,
-        FUNCTION
+        FUNCTION,
+        METHOD
     }
 
     /**
@@ -336,5 +337,46 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void>
         endScope();
 
         currentFunction = enclosingFunction;
+    }
+
+    /**
+     * Resolve Class statements.
+     * @param stmt the class being resolved.
+     */
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt)
+    {
+        declare(stmt.name);
+        define(stmt.name);
+
+        for (Stmt.Function method : stmt.methods) {
+            FunctionType declaration = FunctionType.METHOD;
+            resolveFunction(method, declaration);
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolve Class properties and method calls
+     * @param expr The expression to resolve
+     */
+    @Override
+    public Void visitGetExpr(Expr.Get expr)
+    {
+        resolve(expr.object);
+        return null;
+    }
+
+    /**
+     * Resolve class property setters
+     * @param expr The expression to resolve
+     */
+    @Override
+    public Void visitSetExpr(Expr.Set expr)
+    {
+        resolve(expr.value);
+        resolve(expr.object);
+        return null;
     }
 }

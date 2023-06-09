@@ -39,7 +39,7 @@ public class Parser
     /**
      * Main method to start the parser once it has been instantiated.
      * Implements the 'program' rule from the Lox grammar.
-     * @return A lisst of parsed statements which can be passed to the
+     * @return A list of parsed statements which can be passed to the
      * interpreter
      * @see #expression()
      */
@@ -62,6 +62,8 @@ public class Parser
     private Stmt declaration()
     {
         try {
+            if (match(CLASS)) return classDeclaration();
+            if (match(FUN)) return function("function");
             if (match(VAR)) return varDeclaration();
             return statement();
         }
@@ -86,7 +88,6 @@ public class Parser
         if (match(WHILE)) return whileStatement();
         if (match(BREAK)) return breakStatement();
         if (match(CONTINUE)) return continueStatement();
-        if (match(FUN)) return function("function");
         if (match(RETURN)) return returnStatement();
 
         return expressionStatement();
@@ -98,7 +99,8 @@ public class Parser
      * <br>
      * <pre>
      *   program     -> declaration* EOF ;
-     *   declaration -> funDecl | varDecl | statement ;
+     *   declaration -> classDecl | funDecl | varDecl | statement ;
+     *   classDecl   -> "class" IDENTIFIER "{" function* "}" ;
      *   funDecl     -> "fun" function ;
      *   function    -> IDENTIFIER "(" parameters? ")" block ;
      *   parameters  -> IDENTIFIER ("," IDENTIFIER )* ;
@@ -117,7 +119,7 @@ public class Parser
      *   returnStmt  -> "return" expression? ";" ;
      *   expression  -> comma ;
      *   comma       -> assignment ( "," expression )* ;
-     *   assignment  -> IDENTIFIER "=" assignment | ternary ;
+     *   assignment  -> ( call "." )? IDENTIFIER "=" assignment | ternary ;
      *   ternary     -> logic_or ( "?" expression ":" expression )* ;
      *   logic_or    -> logic_and ( "or" logic_and )* ;
      *   logic_and   -> equality ( "and" equality )* ;
@@ -126,7 +128,7 @@ public class Parser
      *   term        -> factor ( ("-" | "+") factor )* ;
      *   factor      -> unary ( ("/" | "*") unary )* ;
      *   unary       -> ("!" | "-") unary | call ;
-     *   call        -> primary ( "(" arguments? ")" )* ;
+     *   call        -> primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
      *   arguments   -> expression ( "," expression )* ;
      *   primary     -> NUMBER | STRING | "true" | "false" | "nil"
      *                  | "(" expression ")" | IDENTIFIER
@@ -173,6 +175,9 @@ public class Parser
             if (expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable)expr).name;
                 return new Expr.Assign(name, value);
+            } else if (expr instanceof Expr.Get) {
+                Expr.Get get = (Expr.Get)expr;
+                return new Expr.Set(get.object, get.name, value);
             }
 
             error(equals, "Invalid assignment target.");
@@ -308,6 +313,9 @@ public class Parser
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr);
+            } else if (match(DOT)) {
+                Token name = consume(IDENTIFIER, "Expect property name after '.'.");
+                expr = new Expr.Get(expr, name);
             } else {
                 break;
             }
@@ -686,7 +694,7 @@ public class Parser
      * @param kind String denoting the type of construct (function or method)
      * @return The parsed function object.
      */
-    private Stmt function(String kind) {
+    private Stmt.Function function(String kind) {
         Token name = consume(IDENTIFIER, "Expect "+ kind +" name.");
         consume(LEFT_PAREN, "Expect '(' after "+ kind +" name.");
         List<Token> parameters = new ArrayList<>();
@@ -718,5 +726,23 @@ public class Parser
 
         consume(SEMICOLON, "Expect ';' after return value.");
         return new Stmt.Return(keyword, value);
+    }
+
+    /**
+     * Support for Classes within the language.
+     * @return The parsed class
+     */
+    private Stmt classDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect class name.");
+        consume(LEFT_BRACE, "Expect '{' before class body.");
+
+        List<Stmt.Function> methods = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("method"));
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after class body.");
+
+        return new Stmt.Class(name, methods);
     }
 }

@@ -582,4 +582,62 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
     {
         locals.put(expr, depth);
     }
+
+    /**
+     * Interpret a class declaration
+     * @param stmt the class statement to interpret.
+     */
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt)
+    {
+        environment.define(stmt.name.lexeme, null);
+
+        Map<String, LoxFunction> methods = new HashMap<>();
+        for (Stmt.Function method : stmt.methods) {
+            LoxFunction function = new LoxFunction(method, environment);
+            methods.put(method.name.lexeme, function);
+        }
+
+        LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+
+        environment.assign(stmt.name, klass);
+        return null;
+    }
+
+    /**
+     * Interpret property access within a class.
+     * @param expr The expression to interpret
+     */
+    @Override
+    public Object visitGetExpr(Expr.Get expr)
+    {
+        Object object = evaluate(expr.object);
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance) object).get(expr.name);
+        }
+
+        throw new RuntimeError(expr.name, "Only instances have properties.");
+    }
+
+    /**
+     * Interpret the setting of property values within a class
+     * @param expr The expression to interpret
+     * @return The interpreted object
+     * @throws RuntimeError if an attempt is made to interpret a field on
+     * anything other than an object instance
+     */
+    @Override
+    public Object visitSetExpr(Expr.Set expr)
+    {
+        Object object = evaluate(expr.object);
+
+        if (!(object instanceof LoxInstance)) {
+            throw new RuntimeError(expr.name,
+                "Only instances have fields.");
+        }
+
+        Object value = evaluate(expr.value);
+        ((LoxInstance)object).set(expr.name, value);
+        return value;
+    }
 }
