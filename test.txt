@@ -1,4 +1,8 @@
 class Cake {
+    init(flavour) {
+        this.flavour = flavour;
+    }
+
     taste() {
         var adjective = "delicious";
         print "The " + this.flavour + " cake is " + adjective + "!";
@@ -6,14 +10,9 @@ class Cake {
 }
 
 
-var cake = Cake();
-cake.flavour = "Chocolate";
+var cake = Cake("carrot");
 cake.taste();
 
-print this;  // Invalid - causes runtime error
-
-fun notAMethod() {
-  print this;
-}
-
-print notAMethod();
+print cake.flavour;
+cake.flavour = "almond";
+cake.taste();
