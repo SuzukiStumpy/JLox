@@ -1,1 +1,11 @@
-super.notEvenInAClass();
+// Testing keyboard input.
+
+var str = "";
+var in;
+
+while (in != "") {
+  in = input();
+  str = str + in;
+}
+
+print "You typed " + str;

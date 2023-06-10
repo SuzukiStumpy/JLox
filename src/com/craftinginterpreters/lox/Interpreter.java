@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Exception class.  Thrown within the interpreter when a runtime error is
@@ -52,6 +53,22 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>
             public Object call(Interpreter interpreter,
                                List<Object> arguments) {
                 return (double)System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+        });
+
+        globals.define("input", new LoxCallable() {
+            @Override
+            public int arity() { return 0; }
+
+            @Override
+            public Object call(Interpreter interpreter,
+                               List<Object> arguments) {
+
+                Scanner sc = new Scanner(System.in);
+                return (String)sc.nextLine();
             }
 
             @Override
