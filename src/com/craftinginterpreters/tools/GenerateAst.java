@@ -30,6 +30,7 @@ public class GenerateAst
             "Get      : Expr object, Token name",
             "Set      : Expr object, Token name, Expr value",
             "This     : Token keyword",
+            "Super    : Token keyword, Token method",
             "Grouping : Expr expression",
             "Literal  : Object value",
             "Unary    : Token operator, Expr right",
@@ -40,8 +41,8 @@ public class GenerateAst
 
         defineAst(outputDir, "Stmt", Arrays.asList(
             "Block      : List<Stmt> statements",
-            "Class      : Token name, List<Stmt.Function> methods, List<Stmt" +
-                ".Function> classMethods",
+            "Class      : Token name, Expr.Variable superclass, " +
+                "List<Stmt.Function> methods, List<Stmt.Function> classMethods",
             "Expression : Expr expression",
             "Function   : Token name, List<Token> params, List<Stmt> body",
             "Var        : Token name, Expr initializer",

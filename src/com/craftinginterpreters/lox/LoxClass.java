@@ -5,12 +5,15 @@ import java.util.Map;
 public class LoxClass extends LoxInstance implements LoxCallable
 {
     final String name;
+    final LoxClass superclass;
     private final Map<String, LoxFunction> methods;
 
-    LoxClass(LoxClass metaClass, String name, Map<String, LoxFunction> methods)
+    LoxClass(LoxClass metaClass, String name,
+             LoxClass superclass, Map<String, LoxFunction> methods)
     {
         super(metaClass);
         this.name = name;
+        this.superclass = superclass;
         this.methods = methods;
     }
 
@@ -46,6 +49,26 @@ public class LoxClass extends LoxInstance implements LoxCallable
             return methods.get(name);
         }
 
+        if (superclass != null) {
+            return superclass.findMethod(name);
+        }
+
         return null;
+    }
+
+    /**
+     * Try to find an instance method before attempting to pass up the chain
+     * to the superclass for fields and class methods.
+     * @param name the property to return
+     * @return The returned property.
+     * @throws RuntimeError if the property is not found.
+     */
+    @Override
+    Object get(Token name)
+    {
+        LoxFunction method = findMethod(name.lexeme);
+        if (method != null) return method.bind(this);
+
+        return super.get(name);
     }
 }
